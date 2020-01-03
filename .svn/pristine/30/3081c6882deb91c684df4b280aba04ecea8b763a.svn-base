@@ -1,0 +1,41 @@
+.el-transfer-panel{
+    width: 45% !important;
+}
+.el-table .cell{
+    text-align: center !important;
+}
+.el-input-group__append{
+    width: 50px !important;
+  }
+.el-input-group__append:hover  {
+    background: #00AF3B;
+    color: #ffff;
+}
+.el-upload-dragger{
+    width: 100% !important;
+    height: 100% !important;
+    border:none !important; 
+}
+.el-upload-list{
+    display: none !important; 
+}
+.el-select-dropdown {
+    max-width: 100% !important; 
+    /* left: 0 !important;  */
+}
+/* .is-active {
+    color: #00af3c !important;
+}
+.el-tabs__active-bar{
+    background: #00af3c !important;
+} */
+/* .is-checked .el-radio__inner{
+    border-color: #00af3c !important;
+    background: #00af3c !important;
+}
+.is-checked .el-radio__label{
+    color: #00af3c !important;
+} */
+/* .is-focus .el-input__inner{
+    border-color: #00af3c !important;
+} */

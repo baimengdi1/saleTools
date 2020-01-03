@@ -1,0 +1,132 @@
+
+<template>
+  <div class="resourseDetails">
+    <siteHeader :active="manageKey"></siteHeader>
+    <div class="content">
+      <div class="detailContent">
+        <div class="detailItem">
+          <div class="detailItemTitle">标题</div>
+          <div class="detailItemInfo">抗核抗体（ANA）血清学诊断产品推荐书</div>
+        </div>
+        <div class="detailItem">
+          <div class="detailItemTitle">资源分类</div>
+          <div class="detailItemInfo">抗核抗体（ANA）血清学诊断产品推荐书</div>
+        </div>
+        <div class="detailItem">
+          <div class="detailItemTitle">作者</div>
+          <div class="detailItemInfo">抗核抗体（ANA）血清学诊断产品推荐书</div>
+        </div>
+        <div class="detailItem">
+          <div class="detailItemTitle">关键字</div>
+          <div class="detailItemInfo">抗核抗体（ANA）血清学诊断产品推荐书</div>
+        </div>
+        <div class="detailItem">
+          <div class="detailItemTitle">相关指标</div>
+          <div class="detailItemInfo">抗核抗体（ANA）血清学诊断产品推荐书</div>
+        </div>
+        <div class="detailItem">
+          <div class="detailItemTitle">应用科室</div>
+          <div class="detailItemInfo">抗核抗体（ANA）血清学诊断产品推荐书</div>
+        </div>
+        <div class="detailItem">
+          <div class="detailItemTitle">概要介绍</div>
+          <div class="detailItemInfo">抗核抗体（ANA）血清学诊断产品推荐书</div>
+        </div>
+        <div class="detailItem">
+          <div class="detailItemTitle">日期</div>
+          <div class="detailItemInfo">222</div>
+        </div>
+        <div class="detailItem">
+          <div class="detailItemTitle">操作</div>
+          <div class="detailItemInfo downLoadFile" @click="downLoadFile()">
+            <i class="el-icon-download"></i>下载
+          </div>
+        </div>
+      </div>
+      <siteFooter></siteFooter>
+    </div>
+  </div>
+</template>
+<script>
+import siteHeader from "@/components/siteHeader.vue";
+import siteFooter from "@/components/siteFooter.vue";
+export default {
+  data() {
+    return {
+      manageKey: "a" //是否为管理员
+    };
+  },
+  mounted() {
+    console.log(this.$route);
+  },
+  components: { siteHeader, siteFooter },
+  methods: {
+    downLoadFile() {}
+  }
+};
+</script>
+<style scoped lang="less">
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: SimHei;
+}
+body {
+  font-family: "Open Sans";
+  font-size: 13px;
+  color: #787878;
+}
+// 左侧菜单栏
+.leftTabs {
+  width: 190px;
+  position: fixed;
+  left: 0;
+  .elMenu {
+    i {
+      color: #00a83c;
+    }
+  }
+  .el-radio-button__inner {
+    padding: 0px;
+  }
+}
+// 固定内容盒子
+.content {
+  width: 1400px;
+  overflow: hidden;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  .detailContent {
+    padding: 10px 10px 0 10px;
+    .detailItem {
+      padding: 10px 20px 10px 20px;
+      .titleLine {
+        border-left: 4px solid #cbdfd3;
+        margin-right: 9px;
+      }
+      .detailItemTitle {
+        font-size: 14px;
+        color: #00a83c;
+        border-bottom: 1px solid #cbdfd3;
+        padding: 0px 0 9px 0;
+        margin-bottom: 9px;
+      }
+      .detailItemInfo {
+        font-size: 14px;
+        line-height: 28px;
+      }
+      .downLoadFile {
+        cursor: pointer;
+        i {
+          font-weight: 800;
+          font-size: 15px;
+          margin-right: 3px;
+        }
+      }
+    }
+  }
+}
+</style>
+

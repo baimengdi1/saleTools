@@ -1,0 +1,718 @@
+
+<template>
+  <div class="resourseDetails">
+    <siteHeader></siteHeader>
+    <div class="content">
+      <systemLeftTab :active="systemLeftTabActive"></systemLeftTab>
+      <div class="resourseBox">
+        <div class="pageHead">
+          <h1>
+            <i class="el-icon-d-arrow-right"></i> 对字典数据设置,输入数据不能包含'-'号...
+          </h1>
+        </div>
+        <el-row>
+          <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
+            <el-tab-pane label="资源分类" name="资源分类">
+              <el-row>
+                <el-button
+                  @click="handleRowEditClick()"
+                  type="primary"
+                  class="addBtn"
+                  icon="el-icon-circle-plus-outline"
+                  size="small"
+                >添加资源分类</el-button>
+              </el-row>
+              <!-- 资源分类列表开始 -->
+              <vxe-table
+                resizable
+                :tree-config="{children: 'children',accordion: true}"
+                :data="tableData"
+              >
+                <vxe-table-column field="name" title="资源结构" tree-node></vxe-table-column>
+                <vxe-table-column field="level" title="英文名称"></vxe-table-column>
+                <vxe-table-column title="操作" width="140">
+                  <template v-slot="{ row }">
+                    <el-button type="text" @click="closeFile(row)" size="small">禁用</el-button>
+                    <el-button type="text" @click="openFile(row)" size="small">启用</el-button>
+                    <el-button @click="removeRowEvent(row)" type="text" size="small">修改</el-button>
+                  </template>
+                </vxe-table-column>
+              </vxe-table>
+              <!-- 分页器 -->
+              <div class="elPagination">
+                <el-pagination
+                  background
+                  layout="prev, pager, next"
+                  :current-page.sync="currentPage"
+                  @current-change="nextClick"
+                  :total="AllPagingNumber"
+                ></el-pagination>
+              </div>
+            </el-tab-pane>
+            <el-tab-pane label="反馈收件人" name="反馈收件人">
+              <el-row>
+                <el-button
+                  @click="feedbackHandleRowEditClick()"
+                  type="primary"
+                  class="addBtn"
+                  icon="el-icon-circle-plus-outline"
+                  size="small"
+                >添加反馈收件人</el-button>
+              </el-row>
+              <el-table :data="feedbackTableData" border style="width: 100%">
+                <el-table-column prop="name" label="用户名" width="500"></el-table-column>
+                <el-table-column prop="email" label="邮箱" width="500"></el-table-column>
+                <el-table-column label="操作">
+                  <template slot-scope="scope">
+                    <el-button
+                      @click="feedbackHandleRowClick(scope.row)"
+                      type="text"
+                      size="small"
+                    >删除</el-button>
+                    <el-button
+                      type="text"
+                      @click="feedbackHandleRowEditClick(scope.row)"
+                      size="small"
+                    >修改</el-button>
+                  </template>
+                </el-table-column>
+              </el-table>
+              <!-- 分页器 -->
+              <div class="elPagination">
+                <el-pagination
+                  background
+                  layout="prev, pager, next"
+                  :current-page.sync="feedbackCurrentPage"
+                  @current-change="feedbackNextClick"
+                  :total="feedbackAllPagingNumber"
+                ></el-pagination>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+        </el-row>
+      </div>
+      <siteFooter></siteFooter>
+    </div>
+    <!-- 弹窗聚集地 -->
+    <el-dialog title="资源分类" :visible.sync="editDialog">
+      <el-form
+        :model="ruleForm"
+        :rules="rules"
+        ref="ruleForm"
+        label-width="120"
+        class="demo-ruleForm"
+      >
+        <el-form-item style="margin-bottom:0px;" label="所属父组织">
+          <el-col>
+            <div @click="selectParentShowBtn">
+              <el-input type="text" readonly v-model="ruleForm.firstClass" placeholder="--请选择--"></el-input>
+            </div>
+          </el-col>
+        </el-form-item>
+        <el-form-item v-if="selectParentClassShow" style="margin: 2px 0 0 0;">
+          <el-tree
+            class="filter-tree"
+            :data="data"
+            :props="defaultProps"
+            accordion
+            :expand-on-click-node="false"
+            :default-expand-all="true"
+            @node-click="handleNodeClick"
+            ref="tree"
+          ></el-tree>
+        </el-form-item>
+        <el-form-item label="组织名称" prop="secondClass">
+          <el-input v-model="ruleForm.secondClass" placeholder="请输入组织名称"></el-input>
+        </el-form-item>
+        <el-form-item label="组织英文名称" prop="thirdClass">
+          <el-input v-model="ruleForm.thirdClass" placeholder="请输入组织英文名称"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editDialog = false">取 消</el-button>
+        <el-button type="primary" @click="editDialogBtn">确 定</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog title="反馈收件人" :visible.sync="feedbackEditDialog">
+      <el-form
+        :model="feedbackRuleForm"
+        :rules="feedbackRule"
+        ref="feedbackRuleForm"
+        label-width="100px"
+        class="demo-ruleForm"
+      >
+        <el-form-item label="用户名" prop="name">
+          <el-input v-model="feedbackRuleForm.name" placeholder="请输入"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="feedbackRuleForm.email" placeholder="请输入"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="feedbackEditDialog = false">取 消</el-button>
+        <el-button type="primary" @click="feedbackEditDialogBtn">确 定</el-button>
+      </div>
+    </el-dialog>
+  </div>
+</template>
+<script>
+import systemLeftTab from "@/components/systemLeftTab.vue";
+import siteHeader from "@/components/siteHeader.vue";
+import siteFooter from "@/components/siteFooter.vue";
+export default {
+  data() {
+    return {
+      systemLeftTabActive: "7",
+      activeName: "资源分类",
+      autoUpdate: false,
+      selectParentClassShow: false, //是否显示选择资源分类列表
+      editDialog: false, //弹框
+      feedbackEditDialog: false, //弹框
+      currentPage: 0, //资源分类列表当前页
+      AllPagingNumber: 0, //资源分类列表分页总数
+      feedbackCurrentPage: 0, //反馈列表当前页
+      feedbackAllPagingNumber: 0, //反馈列表分页总数
+      // 资源分类
+      tableData: [
+        {
+          name: "仪器产品",
+          level: "1级",
+          age: "1岁",
+          rate: "2",
+          children: [
+            { name: "资质证件", rate: 9, age: 24, level: 1 },
+            { name: "test6", rate: 14, age: 20, level: 3 },
+            {
+              name: "采购论证",
+              level: "",
+              age: "",
+              rate: "",
+              children: [
+                {
+                  name: "test85",
+                  rate: 13,
+                  age: 32,
+                  level: 1,
+                  children: [
+                    { name: "CE认证", rate: 13, age: 32, level: 1 },
+                    { name: "检测报告", rate: 9, age: 29, level: 4 },
+                    { name: "test93", rate: 22, age: 28, level: 5 },
+                    { name: "test90", rate: 55, age: 26, level: 2 }
+                  ]
+                },
+                { name: "test37", rate: 9, age: 29, level: 4 },
+                { name: "test93", rate: 22, age: 28, level: 5 },
+                { name: "test90", rate: 55, age: 26, level: 2 }
+              ]
+            },
+            { name: "宣传培训", rate: 11, age: 21, level: 1 }
+          ]
+        },
+        {
+          name: "二班",
+          level: "",
+          age: "",
+          rate: "",
+          children: [
+            { name: "test15", rate: 13, age: 32, level: 1 },
+            { name: "test44", rate: 9, age: 29, level: 4 },
+            {
+              name: "第一组",
+              level: "",
+              age: "",
+              rate: "",
+              children: [
+                { name: "test37", rate: 9, age: 29, level: 4 },
+                { name: "test93", rate: 22, age: 28, level: 5 }
+              ]
+            },
+            {
+              name: "第二组",
+              level: "",
+              age: "",
+              rate: "",
+              children: [
+                { name: "test74", rate: 11, age: 32, level: 5 },
+                { name: "test99", rate: 23, age: 18, level: 4 },
+                {
+                  name: "第一排",
+                  level: "",
+                  age: "",
+                  rate: "",
+                  children: [
+                    { name: "test48", rate: 77, age: 29, level: 4 },
+                    { name: "test38", rate: 34, age: 21, level: 2 }
+                  ]
+                },
+                { name: "test16", rate: 22, age: 26, level: 5 }
+              ]
+            },
+            { name: "test91", rate: 16, age: 27, level: 5 },
+            {
+              name: "第三组",
+              level: "",
+              age: "",
+              rate: "",
+              children: [
+                { name: "test77", rate: 11, age: 35, level: 1 },
+                { name: "test89", rate: 40, age: 18, level: 4 },
+                {
+                  name: "test10",
+                  rate: 22,
+                  age: 20,
+                  level: 2,
+                  children: [
+                    { name: "test7", rate: 9, age: 24, level: 1 },
+                    { name: "test6", rate: 14, age: 20, level: 3 },
+                    {
+                      name: "第一组",
+                      level: "",
+                      age: "",
+                      rate: "",
+                      children: [
+                        { name: "白梦迪", rate: 13, age: 32, level: 1 },
+                        { name: "白梦迪", rate: 9, age: 29, level: 4 },
+                        { name: "白梦迪", rate: 22, age: 28, level: 5 },
+                        { name: "白梦迪", rate: 55, age: 26, level: 2 }
+                      ]
+                    },
+                    { name: "test32", rate: 11, age: 21, level: 1 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          name: "三班",
+          level: "",
+          age: "",
+          rate: "",
+          children: [
+            { name: "test6", rate: 3, age: 22, level: 2 },
+            { name: "test2", rate: 5, age: 25, level: 3 },
+            { name: "test42", rate: 17, age: 35, level: 4 }
+          ]
+        }
+      ],
+      // 反馈人表格
+      feedbackTableData: [
+        {
+          date: "2016-05-02",
+          name: "王小虎",
+          email: "m17600726327@163.com"
+        },
+        {
+          date: "2016-05-04",
+          name: "王小虎",
+          email: "m17600726327@163.com"
+        },
+        {
+          date: "2016-05-01",
+          name: "王小虎",
+          email: "m17600726327@163.com"
+        },
+        {
+          date: "2016-05-03",
+          name: "王小虎",
+          email: "m17600726327@163.com"
+        }
+      ],
+      // 资源分类
+      ruleForm: {
+        firstClass: "",
+        secondClass: "",
+        thirdClass: "",
+        fourClass: "",
+        fiveClass: "",
+        data: {}
+      },
+      rules: {
+        secondClass: [
+          { required: true, message: "请填写组织名称！", trigger: "blur" }
+        ],
+        thirdClass: [
+          { required: true, message: "请填写组织英文名称！", trigger: "blur" }
+        ]
+      },
+      // 反馈人
+      feedbackRuleForm: {
+        name: "",
+        email: ""
+      },
+      feedbackRule: {
+        name: [{ required: true, message: "请填写用户名！", trigger: "blur" }],
+        email: [
+          { required: true, message: "请输入邮箱地址！", trigger: "blur" },
+          {
+            type: "email",
+            message: "请输入正确的邮箱地址",
+            trigger: ["blur"]
+          }
+        ]
+      },
+      // 资源分类
+      classifyList: [],
+
+      filterText: "",
+      data: [
+        {
+          id: 1,
+          label: "仪器产品",
+          children: [
+            {
+              id: 4,
+              label: "资质认证",
+              children: [
+                {
+                  id: 9,
+                  label: "CE认证",
+                  children: [
+                    {
+                      id: 9,
+                      label: "CE认证节点",
+                      children: [
+                        {
+                          id: 9,
+                          label: "CE认证重点"
+                        },
+                        {
+                          id: 10,
+                          label: "三级 1-1-2"
+                        }
+                      ]
+                    },
+                    {
+                      id: 10,
+                      label: "三级 1-1-2"
+                    }
+                  ]
+                },
+                {
+                  id: 10,
+                  label: "三级 1-1-2"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: 2,
+          label: "一级 2",
+          children: [
+            {
+              id: 5,
+              label: "二级 2-1"
+            },
+            {
+              id: 6,
+              label: "二级 2-2"
+            }
+          ]
+        },
+        {
+          id: 3,
+          label: "一级 3",
+          children: [
+            {
+              id: 7,
+              label: "二级 3-1"
+            },
+            {
+              id: 8,
+              label: "二级 3-2"
+            }
+          ]
+        }
+      ],
+      defaultProps: {
+        children: "children",
+        label: "label"
+      }
+      // list : [
+      //   {
+      //     name:"1-2-3",
+      //   },
+      //   {
+      //     name:"2-1 "
+      //   },
+      //   {
+      //     name:"3"
+      //   },
+      //   {
+      //     name:"4-1-2-3"
+      //   }
+      // ]
+    };
+  },
+  mounted() {},
+  components: { siteHeader, siteFooter, systemLeftTab },
+  methods: {
+    // 切换标题框
+    handleClick(tab, event) {
+      console.log(tab, event);
+    },
+    // 资源分类方法开始-----------
+    handleNodeClick(data) {
+      this.ruleForm.firstClass = data.label;
+      this.ruleForm.data = data;
+      if (this.selectParentClassShow) {
+        this.selectParentClassShow = false;
+      }
+    },
+    // 是否确定禁用
+    closeFile(row) {
+      console.log(row);
+      this.$alert("确定禁用吗？", "禁用", {
+        confirmButtonText: "确定",
+        callback: action => {}
+      });
+    },
+    // 是否确定启用
+    openFile(row) {
+      console.log(row);
+      this.$alert("确定启用吗？", "启用", {
+        confirmButtonText: "确定",
+        callback: action => {}
+      });
+    },
+    // 资质列表修改
+    removeRowEvent(row) {
+      console.log(row);
+      this.editDialog = !this.editDialog;
+      this.ruleForm = {
+        firstClass: "",
+        secondClass: "",
+        thirdClass: "",
+        fourClass: "",
+        fiveClass: "",
+        data: {}
+      };
+    },
+    // 资源分类添加
+    handleRowEditClick(row) {
+      console.log(row);
+      this.editDialog = !this.editDialog;
+      if (row) {
+      } else {
+        this.ruleForm = {};
+      }
+    },
+    // 资源分类弹框
+    editDialogBtn() {
+      let formName = "ruleForm";
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          this.editDialog = false;
+          console.log(this.ruleForm, "this.ruleForm");
+          return;
+        } else {
+          return;
+        }
+      });
+    },
+    // 显示资源分类列表
+    selectParentShowBtn() {
+      console.log(this.selectParentClassShow);
+      if (!this.selectParentClassShow) {
+        this.selectParentClassShow = true;
+      }
+    },
+    //分页下一页
+    nextClick() {},
+    //分页下一页
+    feedbackNextClick() {},
+    // 反馈人方法开始-----------
+    // 发馈人删除
+    feedbackHandleRowClick(row) {
+      this.$alert("确定删除", "删除", {
+        confirmButtonText: "确定",
+        callback: action => {
+          console.log(row);
+        }
+      });
+    },
+    // 发馈人添加
+    feedbackHandleRowEditClick(row) {
+      console.log(row);
+      this.feedbackEditDialog = !this.feedbackEditDialog;
+      if (row) {
+      } else {
+        this.feedbackRuleForm = {};
+      }
+    },
+    // 发馈人弹框
+    feedbackEditDialogBtn() {
+      let formName = "feedbackRuleForm";
+      this.$refs[formName].validate(valid => {
+        if (valid) {
+          this.feedbackEditDialog = false;
+          console.log(this.feedbackRuleForm, "this.feedbackRuleForm");
+          return;
+        } else {
+          return;
+        }
+      });
+    }
+  },
+  watch: {
+    filterText(val) {
+      this.$refs.tree.filter(val);
+    }
+  }
+};
+</script>
+<style scoped lang="less">
+* {
+  box-sizing: border-box;
+}
+body {
+  font-family: "Open Sans";
+  font-size: 13px;
+  color: #393939;
+  line-height: 1.5;
+}
+// 左侧菜单栏
+.leftTabs {
+  width: 190px;
+  position: fixed;
+  left: 0;
+  .elMenu {
+    i {
+      color: #00a83c;
+    }
+  }
+  .el-radio-button__inner {
+    padding: 0px;
+  }
+}
+// 步骤条
+.siteSteps {
+  width: 95%;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 14px;
+  padding: 3px;
+  line-height: 36px;
+  margin-bottom: 10px;
+  .steps {
+    list-style: none;
+    display: table;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    position: relative;
+    li {
+      display: table-cell;
+      text-align: center;
+      width: 1%;
+      .step {
+        border: 5px solid #ced1d6;
+        border-top-color: #ced1d6;
+        border-right-color: #ced1d6;
+        border-bottom-color: #ced1d6;
+        border-left-color: #ced1d6;
+        color: #546474;
+        font-size: 16px;
+        border-radius: 100%;
+        background-color: #fff;
+        position: relative;
+        z-index: 2;
+        display: inline-block;
+        width: 40px;
+        height: 40px;
+        line-height: 32px;
+        text-align: center;
+      }
+      .title {
+        display: block;
+        margin-top: 4px;
+        max-width: 100%;
+        color: #2b3d53;
+        font-size: 14px;
+        z-index: 104;
+        text-align: center;
+        table-layout: fixed;
+        word-wrap: break-word;
+      }
+    }
+  }
+  .active .title {
+    color: #2b3d53;
+  }
+  li::before {
+    display: block;
+    content: "";
+    width: 100%;
+    height: 1px;
+    font-size: 0;
+    overflow: hidden;
+    border-top: 4px solid #ced1d6;
+    border-top-color: rgb(206, 209, 214);
+    position: relative;
+    top: 23px;
+    z-index: 1;
+  }
+  li:first-child::before {
+    max-width: 51%;
+    left: 50%;
+  }
+  li:last-child::before {
+    max-width: 50%;
+    width: 50%;
+  }
+  .steps li.active::before,
+  .steps li.complete::before,
+  .steps li.active .step,
+  .steps li.complete .step {
+    border-color: #58bf80;
+  }
+}
+// 固定内容盒子
+.content {
+  width: 1400px;
+  overflow: hidden;
+  margin: 0 auto;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  .resourseBox {
+    border: 1px solid #e0e0e0;
+    border-bottom: none;
+    width: 1220px;
+    min-height: 368px;
+    padding: 0 20px;
+    margin-left: 180px;
+    .pageHead {
+      h1 {
+        font-size: 14px;
+        height: 40px;
+        line-height: 40px;
+        font-weight: 400;
+        color: #8089a0;
+        i {
+          display: inline-block;
+          font: normal normal normal 14px/1 FontAwesome;
+          font-size: 14px;
+          font-size: inherit;
+          text-rendering: auto;
+        }
+      }
+    }
+    .addBtn {
+      margin: 0px 0 15px 0;
+    }
+  }
+  .elPagination {
+    text-align: center;
+    margin-top: 10px;
+  }
+}
+</style>
+<style>
+.vxe-table .vxe-tree-wrapper .vxe-tree--node-btn {
+  color: #00af3c;
+}
+.vxe-table .vxe-tree-wrapper .vxe-tree--node-btn:hover {
+  color: #00af3c;
+}
+</style>

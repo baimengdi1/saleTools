@@ -1,0 +1,219 @@
+<template>
+  <div>
+    <!--导航菜单-->
+    <el-menu :default-active="1" :collapse="collapsed" ref="leftNavigation">
+    
+    </el-menu>
+  </div>
+</template>
+
+<script>
+import NavMenu from "@/components/NavMenu.vue";
+export default {
+  components: {
+    NavMenu: NavMenu
+  },
+  data() {
+    return {
+      routes: [
+        {
+          path: "/login",
+          type: "login",
+          component: Login
+        },
+        {
+          path: "*",
+          component: NotFound
+        },
+        {
+          path: "/",
+          type: "home", // 根据type区分不同模块（顶部导航）
+          name: "home", // 根据name区分不同子模块（左侧导航）
+          redirect: "/dashboard",
+          component: Home,
+          menuShow: true,
+          children: [
+            {
+              path: "/dashboard",
+              component: LeftNav,
+              name: "dashboard", // 当前路由的name
+              leaf: true, // 只有一个节点
+              iconCls: "iconfont icon-home", // 图标样式class
+              menuShow: true,
+              children: [
+                {
+                  path: "/dashboard",
+                  component: Dashboard,
+                  name: "首页",
+                  menuShow: true
+                }
+              ]
+            },
+            {
+              path: "/mySet",
+              component: LeftNav,
+              name: "我的设置",
+              iconCls: "el-icon-menu",
+              menuShow: true,
+              children: [
+                {
+                  path: "/mySet/plan",
+                  component: Plan,
+                  name: "行程计划",
+                  menuShow: true
+                },
+                {
+                  path: "/mySet/mission",
+                  component: Mission,
+                  name: "我的任务",
+                  menuShow: true
+                },
+                {
+                  path: "/mySet/maillist",
+                  component: Maillist,
+                  name: "通讯录",
+                  menuShow: true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          path: "/enterpriseManager",
+          type: "enterprise",
+          name: "enterprise",
+          component: Home,
+          redirect: "/enterprise/list",
+          menuShow: true,
+          children: [
+            {
+              path: "/enterpriseList",
+              component: LeftNav,
+              name: "enterpriseList",
+              leaf: true, // 只有一个节点
+              iconCls: "iconfont icon-home", // 图标样式class
+              menuShow: true,
+              children: [
+                {
+                  path: "/enterprise/list",
+                  component: EnterpriseList,
+                  name: "企业列表",
+                  menuShow: true
+                },
+                {
+                  path: "/enterprise/detail",
+                  component: EnterpriseDetail,
+                  name: "企业详情",
+                  menuShow: false
+                }
+              ]
+            },
+            {
+              path: "/enterpriseAdd",
+              component: LeftNav,
+              name: "enterpriseAdd",
+              leaf: true, // 只有一个节点
+              iconCls: "el-icon-menu",
+              menuShow: true,
+              children: [
+                {
+                  path: "/enterprise/add",
+                  component: EnterpriseAdd,
+                  name: "企业添加",
+                  menuShow: true
+                }
+              ]
+            },
+            {
+              path: "/enterpriseValidate",
+              component: LeftNav,
+              name: "enterpriseValidate",
+              leaf: true, // 只有一个节点
+              iconCls: "el-icon-menu",
+              menuShow: true,
+              children: [
+                {
+                  path: "/enterprise/validate",
+                  component: EnterpriseValidate,
+                  name: "企业认证",
+                  menuShow: true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          path: "/vehicleManager",
+          type: "enterprise",
+          name: "vehicle",
+          component: Home,
+          redirect: "/vehicle/list",
+          menuShow: true,
+          children: [
+            {
+              path: "/vehicleList",
+              component: LeftNav,
+              name: "vehicleList",
+              leaf: true, // 只有一个节点
+              iconCls: "iconfont icon-home", // 图标样式class
+              menuShow: true,
+              children: [
+                {
+                  path: "/vehicle/list",
+                  component: VehicleManage,
+                  name: "车辆信息",
+                  menuShow: true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          path: "/deptManager",
+          type: "enterprise",
+          name: "dept",
+          component: Home,
+          redirect: "/dept/list",
+          menuShow: true,
+          children: [
+            {
+              path: "/deptList",
+              component: LeftNav,
+              name: "deptList",
+              leaf: true, // 只有一个节点
+              iconCls: "iconfont icon-home", // 图标样式class
+              menuShow: true,
+              children: [
+                {
+                  path: "/dept/list",
+                  component: DeptManager,
+                  name: "部门信息",
+                  menuShow: true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+  },
+  created() {
+    console.log(this.factorial(2));
+    tableData.forEach(res => {
+      this.factorial(res);
+    });
+  },
+  methods: {
+    factorial(num) {
+      if (num.children > 0) {
+        return num;
+      } else {
+        return num * this.factorial(num - 1);
+      }
+    }
+  }
+};
+</script>
+
+<style>
+</style>
